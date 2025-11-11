@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# 读取数据：trainingIb.dat 三列 (x, V, V')
-#            validationIa.dat 两列 (x, V)
 train = np.loadtxt('trainingIb.dat')
 val   = np.loadtxt('validationIa.dat')
 
@@ -32,12 +30,10 @@ MSE_withGrad= np.empty(Nmax)
 w = 1.0
 
 for n in range(1, Nmax+1):
-    # 仅函数值
     A = vander_inc(x, n)
     theta, *_ = np.linalg.lstsq(A, y, rcond=None)
     MSE_noGrad[n-1] = mse(vander_inc(xv, n) @ theta, yv)
 
-    # 函数 + 导数
     A0 = vander_inc(x, n)
     A1 = vander_inc_d1(x, n)
     A_aug = np.vstack((A0, w*A1))
