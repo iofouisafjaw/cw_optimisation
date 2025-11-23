@@ -1,79 +1,75 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-train = np.loadtxt('trainingIa.dat')
-val   = np.loadtxt('validationIa.dat')
-x_tr, y_tr = train[:, 0], train[:, 1]
-x_va, y_va = val[:, 0],   val[:, 1]
+train = np.loadtxt("trainingIa.dat")
+val   = np.loadtxt("validationIa.dat")
 
-def vander_inc(x, n):
-    return np.vander(np.asarray(x).ravel(), N=n, increasing=True)
+x, y   = train[:,0], train[:,1]
+xv, yv = val[:,0],   val[:,1]
 
-def mse(yhat, y):
-    return float(np.mean((np.ravel(yhat) - np.ravel(y))**2))
+def Phi(x, n):
+    x = np.asarray(x).ravel()
+    return np.vander(x, N=n, increasing=True)
+
+def mse(a, b):
+    return np.mean((a-b)**2)
 
 Nmax = 20
-MSEn = np.empty(Nmax)
-for n in range(1, Nmax + 1):
-    A = vander_inc(x_tr, n)
-    theta, *_ = np.linalg.lstsq(A, y_tr, rcond=None)
-    yhat_va = vander_inc(x_va, n) @ theta
-    MSEn[n - 1] = mse(yhat_va, y_va)
+mse_vs_n = np.zeros(Nmax)
 
-target = 1e-3
-idx = np.where(MSEn <= target)[0]
-best_n = int(idx[0] + 1) if idx.size else 10
-print(f'Best n (first <=1e-3): {best_n}, MSE={MSEn[best_n-1]:.3e}')
+for n in range(1, Nmax+1):
+    A = Phi(x, n)
+    theta, *_ = np.linalg.lstsq(A, y, rcond=None)
+    mse_vs_n[n-1] = mse(Phi(xv, n) @ theta, yv)
 
-plt.figure()
-plt.semilogy(np.arange(1, Nmax + 1), MSEn, '-o', label='Validation MSE')
-plt.axhline(target, ls='--', color='r', label='threshold 1e-3')
-plt.scatter([best_n], [MSEn[best_n-1]], s=80, c='k', zorder=5)
-plt.annotate(f'n={best_n}\nMSE={MSEn[best_n-1]:.2e}',
-             xy=(best_n, MSEn[best_n-1]),
-             xytext=(best_n + 0.6, MSEn[best_n-1]*2),
-             arrowprops=dict(arrowstyle='->', lw=1))
-
-plt.grid(True, which='both', axis='y')
-plt.xlabel('Degree n')
-plt.ylabel('Validation MSE (log scale)')
-plt.title('Part I.a — MSE vs degree n (log scale)')
-plt.legend()
+plt.figure(figsize=(6,4))
+plt.semilogy(range(1, Nmax+1), mse_vs_n, 'o-')
+plt.axhline(1e-3, linestyle='--', color='gray')
+plt.xlabel("Polynomial degree n")
+plt.ylabel("Validation MSE")
+plt.title("MSE vs n")
+plt.grid(True, which="both")
 plt.tight_layout()
-plt.savefig('fig_mse_vs_n_log.png', dpi=150)
+plt.savefig("q1a_MSE_vs_n.png", dpi=150)
 
-n = best_n
-m_list = np.arange(5, len(x_tr) + 1)
-MSEm = np.empty_like(m_list, dtype=float)
-for k, m in enumerate(m_list):
-    A = vander_inc(x_tr[:m], n)
-    theta, *_ = np.linalg.lstsq(A, y_tr[:m], rcond=None)
-    yhat_va = vander_inc(x_va, n) @ theta
-    MSEm[k] = mse(yhat_va, y_va)
+n_star = np.argmin(mse_vs_n) + 1
 
-plt.figure()
-plt.plot(m_list, MSEm, '-o')
-plt.grid(True)
-plt.xlabel('# training points')
-plt.ylabel('Validation MSE')
-plt.title(f'Part I.a — MSE vs #training points (n={n})')
-plt.tight_layout()
-plt.savefig('fig_mse_vs_m.png', dpi=150)
+print(n_star)
 
-A = vander_inc(x_tr, n)
-theta, *_ = np.linalg.lstsq(A, y_tr, rcond=None)
-xx = np.linspace(min(x_tr.min(), x_va.min()),
-                 max(x_tr.max(), x_va.max()), 400)
-yy = vander_inc(xx, n) @ theta
+A= Phi(x, n_star)
+theta_star, *_ = np.linalg.lstsq(A, y, rcond=None)
 
-plt.figure()
-plt.scatter(x_tr, y_tr, s=20, c='b', label='train')
-plt.scatter(x_va, y_va, s=20, c='r', label='validation')
-plt.plot(xx, yy, 'k', lw=1.5, label='fit')
+xx = np.linspace(min(x.min(), xv.min()), max(x.max(), xv.max()), 400)
+yy = Phi(xx, n_star) @ theta_star
+
+plt.figure(figsize=(7,4))
+plt.scatter(x, y, s=25, c='gray', label='training data')
+plt.scatter(xv, yv, s=25, c='orange', marker='x', label='validation points')
+plt.plot(xx, yy, 'r', label=f'poly fit (n={n_star})')
+plt.xlabel("x")
+plt.ylabel("V(x)")
+plt.title(f"fitted curve (n = {n_star})")
 plt.grid(True)
 plt.legend()
-plt.title(f'Part I.a — fitted polynomial (n={n})')
 plt.tight_layout()
-plt.savefig('fig_fit.png', dpi=150)
+plt.savefig("q1a_fitted_curve.png", dpi=150)
 
+M = len(x)
+mse_vs_m = np.zeros(M)
 
+for m in range(2, M+1):
+    xm = x[:m]
+    ym = y[:m]
+    A_m = Phi(xm, n_star)
+    theta_m, *_ = np.linalg.lstsq(A_m, ym, rcond=None)
+    mse_vs_m[m-1] = mse(Phi(xv, n_star) @ theta_m, yv)
+
+ms = np.arange(1, M+1)
+plt.figure(figsize=(6,4))
+plt.semilogy(ms, mse_vs_m, 'o-')
+plt.xlabel("Number of training points m")
+plt.ylabel("Validation MSE")
+plt.title(f"MSE vs m (n = {n_star})")
+plt.grid(True, which="both")
+plt.tight_layout()
+plt.savefig("q1a_MSE_vs_m.png", dpi=150)

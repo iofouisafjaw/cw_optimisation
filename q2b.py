@@ -36,14 +36,14 @@ plt.figure()
 plt.plot(np.arange(0, N+1), np.r_[xbar, x], label='x*')
 plt.plot(np.arange(0, N+1), np.r_[ybar, y], label='y*')
 plt.xlabel('i'); plt.ylabel('state'); plt.grid(True)
-plt.legend(); plt.title(f'II.b — state trajectories (γ={gamma:g})')
-plt.tight_layout(); plt.savefig('IIb_states.png', dpi=150)
+plt.legend(); plt.title(f'state trajectories (γ={gamma:g})')
+plt.tight_layout(); plt.savefig('q2b_states.png', dpi=150)
 
 plt.figure()
 plt.plot(np.arange(1, N+1), u, label='u*')
 plt.plot(np.arange(1, N+1), v, label='v*')
 plt.xlabel('i'); plt.ylabel('control'); plt.grid(True)
-plt.legend(); plt.title(f'II.b — controls (γ={gamma:g})')
-plt.tight_layout(); plt.savefig('IIb_controls.png', dpi=150)
+plt.legend(); plt.title(f'controls (γ={gamma:g})')
+plt.tight_layout(); plt.savefig('q2b_controls.png', dpi=150)
 
 

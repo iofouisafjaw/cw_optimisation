@@ -20,21 +20,19 @@ for gamma in gammas:
     x = h + G @ u
     U_list.append(u.ravel());  X_list.append(x.ravel())
 
-# controls
 plt.figure()
 for u, g in zip(U_list, gammas):
     plt.plot(np.arange(1, N+1), u, label=rf'$\gamma={g}$')
 plt.xlabel('i'); plt.ylabel('u_i'); plt.grid(True)
 plt.legend(); plt.title('Optimal controls vs $\gamma$')
 plt.tight_layout()
-plt.savefig('IIa_controls.png', dpi=150)
+plt.savefig('q2a_controls.png', dpi=150)
 
-# states
 plt.figure()
 for x, g in zip(X_list, gammas):
     plt.plot(np.arange(0, N+1), np.r_[xbar, x], label=rf'$\gamma={g}$')
 plt.xlabel('i'); plt.ylabel('x_i'); plt.grid(True)
 plt.legend(); plt.title('State trajectories vs $\gamma$')
 plt.tight_layout()
-plt.savefig('IIa_states.png', dpi=150)
+plt.savefig('q2a_states.png', dpi=150)
 
